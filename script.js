@@ -197,6 +197,27 @@ async function saveModel(){
     const result = await model.save('downloads://my-model');;
     console.log("result: ", result);
 }
+function getModelUrl(name){
+    if(name === "Under Fitting"){
+        return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/best-fitting.json"
+    }
+    if(name === "Best Fitting"){
+        return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/best-fitting.json"
+    }
+    if(name === "Over Fitting"){
+        return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/best-fitting.json"
+    }
+    return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/best-fitting.json"
+}
+
+async function loadModel(event){
+    const modelName = event.target.value;
+    const url = getModelUrl(modelName);
+    model = await tf.loadLayersModel(url);
+    console.log("Loaded model: ", modelName);
+}
 let model = createModel();
 document.addEventListener('DOMContentLoaded', run);
+document.getElementById("selectModel")
+    .addEventListener('change', event => loadModel(event), false)
 
