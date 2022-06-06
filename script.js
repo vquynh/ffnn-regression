@@ -3,11 +3,14 @@
  * and cleaned of missing data.
  */
 async function getData() {
-    const N = 50;
+    const N = 500;
     let data = Array(N);
     for (let i = 0; i < N; i++) {
-        const x = Math.random();
-        const y = (x+0.8)*(x-0.2)*(x-0.3)*(x-0.6);
+        let randomSign = Math.random() < 0.5 ? -1 : 1;
+        const randomNumber = Math.random();
+        const x = randomSign*randomNumber;
+        const noise = getRandomNoise(randomNumber, 0.03);
+        const y = (x+0.8)*(x-0.2)*(x-0.3)*(x-0.6) + noise;
         data[i] = {
             x: x,
             y: y
@@ -15,6 +18,14 @@ async function getData() {
 
     }
     return data;
+}
+
+function getRandomNoise(mean, variance) {
+    let u = 0, v = 0;
+    while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while(v === 0) v = Math.random();
+    const number = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+    return variance*number;
 }
 
 async function run() {
@@ -37,7 +48,9 @@ async function run() {
 
     // More code will be added below
     // Create the model
-    const model = createModel();
+    if(model == null){
+        model= createModel();
+    }
     tfvis.show.modelSummary({name: 'Model Summary'}, model);
 
     // Convert the data to a form we can use for training.
@@ -58,10 +71,15 @@ function createModel() {
     const model = tf.sequential();
 
     // Add a single input layer
-    model.add(tf.layers.dense({inputShape: [1], units: 1, useBias: true, activation: "relu"}));
+    model.add(tf.layers.dense({inputShape: [1], units: 1, useBias: true, name: "input_layer"}));
+    model.add(tf.layers.dense({units: 32, useBias: true, activation: "relu",  name: "layer_1"}));
+    model.add(tf.layers.dense({units: 32, useBias: true, activation: "relu",  name: "layer_2"}));
+    model.add(tf.layers.dense({units: 32, useBias: true, activation: "relu", name: "layer_3"}));
+    model.add(tf.layers.dense({units: 32, useBias: true, activation: "relu", name: "layer_4"}));
+    model.add(tf.layers.dense({units: 32, useBias: true, activation: "relu", name: "layer_5"}));
 
     // Add an output layer
-    model.add(tf.layers.dense({units: 1, useBias: true}));
+    model.add(tf.layers.dense({units: 1, useBias: true, name: "output_layer"}));
 
     return model;
 }
@@ -113,11 +131,11 @@ async function trainModel(model, inputs, labels) {
     model.compile({
         optimizer: tf.train.adam(),
         loss: tf.losses.meanSquaredError,
-        metrics: ['mse'],
+        metrics: ['mse','accuracy'],
     });
 
     const batchSize = 32;
-    const epochs = 50;
+    const epochs = 100;
 
     return await model.fit(inputs, labels, {
         batchSize,
@@ -125,7 +143,7 @@ async function trainModel(model, inputs, labels) {
         shuffle: true,
         callbacks: tfvis.show.fitCallbacks(
             { name: 'Training Performance' },
-            ['loss', 'mse'],
+            ['loss'],
             { height: 200, callbacks: ['onEpochEnd'] }
         )
     });
@@ -168,15 +186,17 @@ function testModel(model, inputData, normalizationData) {
         {name: 'Model Predictions vs Original Data'},
         {values: [originalPoints, predictedPoints], series: ['original', 'predicted']},
         {
-            xLabel: 'Horsepower',
-            yLabel: 'MPG',
+            xLabel: 'x',
+            yLabel: 'y(x)',
             height: 300
         }
     );
 }
 
-const model = tf.sequential();
-model.add(tf.layers.dense({inputShape: [1], units: 1, useBias: true, activation: "relu"}));
-model.add(tf.layers.dense({units: 1}));
+async function saveModel(){
+    const result = await model.save('downloads://my-model');;
+    console.log("result: ", result);
+}
+let model = createModel();
 document.addEventListener('DOMContentLoaded', run);
 
