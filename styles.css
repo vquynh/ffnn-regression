@@ -1,0 +1,25 @@
+.tf-tab{
+    visibility: hidden;
+    height: 0;
+}
+.visor{
+    margin-top: 130px;
+    position: absolute;
+}
+.visor-controls{
+    visibility: hidden;
+    height: 0;
+}
+.row{
+    margin-top: 30px;
+    padding-left: 20px;
+}
+
+.header{
+    padding-top: 20px;
+    padding-left: 20px;
+    background-color: aliceblue;
+    padding-bottom: 22px;
+    border-bottom: cornflowerblue;
+    border-bottom-width: thick;
+}
