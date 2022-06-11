@@ -66,9 +66,12 @@ async function run() {
 
     // Get pre-trained model
     model = await getPreTrainedModel(selectedModel);
+    await showSummaryAndTestModel();
+}
+
+async function showSummaryAndTestModel(){
     tfvis.show.modelSummary(document.getElementById("summary"), model);
     console.log("Model with layers: ", nLayers);
-
     await testModel(model);
 }
 
@@ -240,15 +243,15 @@ async function saveModel(){
 }
 function getModelUrl(name){
     if(name === "Under Fitting"){
-        return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/under-fitting.json"
+        console.log("Got: ", name);
+        return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/under-fitting.json";
     }
     if(name === "Best Fitting"){
-        return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/best-fitting.json"
+        return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/best-fitting.json";
     }
     if(name === "Over Fitting"){
-        return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/best-fitting.json"
+        return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/over-fitting.json";
     }
-    return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/best-fitting.json"
 }
 
 async function getPreTrainedModel(modelName){
@@ -258,8 +261,8 @@ async function getPreTrainedModel(modelName){
 
 async function selectModel(modelName){
     setParametersByModel(modelName);
-    await getPreTrainedModel(modelName);
-    await testModel();
+    model = await getPreTrainedModel(modelName);
+    await showSummaryAndTestModel();
 }
 
 async function changeTestingSamples(value) {
