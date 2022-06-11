@@ -2,14 +2,14 @@
  * Get the car data reduced to just the variables we are interested
  * and cleaned of missing data.
  */
-async function getData(samples) {
+function getData(samples) {
     const N = samples;
     let data = Array(N);
     for (let i = 0; i < N; i++) {
         let randomSign = Math.random() < 0.5 ? -1 : 1;
         const randomNumber = Math.random();
         const x = randomSign*randomNumber;
-        const noise = getRandomNoise(randomNumber, 0.03);
+        const noise = getRandomNoise(variance);
         const y = (x+0.8)*(x-0.2)*(x-0.3)*(x-0.6) + noise;
         data[i] = {
             x: x,
@@ -19,7 +19,7 @@ async function getData(samples) {
     return data;
 }
 
-function getRandomNoise(mean, variance) {
+function getRandomNoise(variance) {
     let u = 0, v = 0;
     while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
     while(v === 0) v = Math.random();
@@ -52,29 +52,26 @@ function setParametersByModel(name) {
 }
 
 async function run() {
-    setParametersByModel(document.getElementById("selectModel").value);
+    const selectedModel = document.getElementById("selectModel").value || "Best Fitting";
+    setParametersByModel(selectedModel);
     setDefaultParameters();
 
-    // Load and plot the original input data that we are going to train on.
-    inputData = await getData(nSamples);
+    // Get pre-trained model
+    model = await getPreTrainedModel(selectedModel);
+    tfvis.show.modelSummary(document.getElementById("summary"), model);
+    console.log("Model with layers: ", nLayers);
 
-    // Create the model
-    if(model == null){
-       await changeModel(document.getElementById("selectModel").value);
-    }
-    tfvis.show.modelSummary({name: 'Model Summary'}, model);
+    await testModel(model);
+}
 
-    // Convert the data to a form we can use for training.
-    tensorData = convertToTensor(inputData);
-    //const {inputs, labels} = tensorData;
+async function createTrainAndTestNewModel(){
+    model = createModel();
+    tfvis.show.modelSummary(document.getElementById("summary"), model);
+    console.log("Model with layers: ", nLayers);
 
-    // Train the model
-    //await trainModel(model, inputs, labels);
-    //console.log('Done Training');
+    await trainModel();
 
-    // Make some predictions using the model and compare them to the
-    // original data
-    //await testModel();
+    await testModel();
 }
 
 function createModel() {
@@ -89,7 +86,7 @@ function createModel() {
             units: neurons,
             useBias: true,
             activation: activation,
-            name: "hidden_layer_" + (i = 1)
+            name: "hidden_layer_" + (i + 1)
         }));
     }
 
@@ -142,9 +139,23 @@ function convertToTensor(data) {
 }
 
 async function trainModel() {
-    // Prepare the model for training.
+    // Load and plot the original input data that we are going to train on.
+    const trainingData = getData(nSamples);
+
+    tfvis.render.scatterplot(
+        {drawArea: document.getElementById("trainingInput")},
+        {values: trainingData, series:["Training data"]},
+        {
+            xLabel: 'x',
+            yLabel: 'y(x)',
+            height: 300
+        }
+    );
+
+    // Convert the data to a form we can use for training.
+    const tensorData = convertToTensor(trainingData);
     const {inputs, labels} = tensorData;
-    model = createModel();
+
     await model.compile({
         optimizer: tf.train.adam(),
         loss: tf.losses.meanSquaredError,
@@ -153,12 +164,13 @@ async function trainModel() {
 
     const batchSize = 32;
 
-    return await model.fit(inputs, labels, {
+    // Train model
+    await model.fit(inputs, labels, {
         batchSize,
         epochs,
         shuffle: true,
         callbacks: tfvis.show.fitCallbacks(
-            { name: 'Training Performance' },
+            { drawArea: document.getElementById("trainingPerformance") },
             ['loss'],
             { height: 200, callbacks: ['onEpochEnd'] }
         )
@@ -166,7 +178,7 @@ async function trainModel() {
 }
 
 async function testModel() {
-    const input = await getData(nSamples);
+    const input = getData(nSamples);
     const tensorData = convertToTensor(input);
     const {inputMax, inputMin, labelMin, labelMax} = tensorData;
 
@@ -199,10 +211,9 @@ async function testModel() {
         x: d.x, y: d.y,
     }));
 
-
     tfvis.render.scatterplot(
-        {name: 'Model Predictions vs Original Data'},
-        {values: [originalPoints, predictedPoints], series: ['original', 'predicted']},
+        {drawArea: document.getElementById("result")},
+        {values: [originalPoints, predictedPoints], series: ['Test data', 'predicted']},
         {
             xLabel: 'x',
             yLabel: 'y(x)',
@@ -228,11 +239,15 @@ function getModelUrl(name){
     return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/best-fitting.json"
 }
 
-async function changeModel(modelName){
-    setParametersByModel(modelName);
+async function getPreTrainedModel(modelName){
     const url = getModelUrl(modelName);
-    model = await tf.loadLayersModel(url);
-    console.log("Loaded model: ", modelName);
+    return await tf.loadLayersModel(url);
+}
+
+async function selectModel(modelName){
+    setParametersByModel(modelName);
+    await getPreTrainedModel(modelName);
+    await testModel();
 }
 
 function changeSample(value) {
@@ -241,14 +256,17 @@ function changeSample(value) {
 function changeVariance(value) {
     variance = Number(value);
 }
-function changeActivation(value) {
+async function changeActivation(value) {
     activation = value.toLowerCase();
+    await createTrainAndTestNewModel();
 }
-function changeLayers(value) {
+async function changeLayers(value) {
     nLayers = Number(value);
+    await createTrainAndTestNewModel();
 }
-function changeNeurons(value) {
+async function changeNeurons(value) {
     neurons = Number(value);
+    await createTrainAndTestNewModel();
 }
 function changeEpochs(value) {
     epochs = Number(value);
@@ -257,18 +275,21 @@ function changeLearningRate(value) {
     learningRate = Number(value);
 }
 
-let model, inputData, tensorData, nSamples, variance, activation, nLayers, neurons, epochs, learningRate;
+let model, nSamples, variance, activation, nLayers, neurons, epochs, learningRate;
 document.addEventListener('DOMContentLoaded', run);
 document.getElementById("selectModel")
-    .addEventListener('change', event => changeModel(event.target.value), false);
+    .addEventListener('change', event => selectModel(event.target.value), false);
 document.getElementById("selectSample")
     .addEventListener('change', event => changeSample(event.target.value), false);
 document.getElementById("selectVariance")
     .addEventListener('change', event => changeVariance(event.target.value), false);
+// this change creates new model
 document.getElementById("selectActivation")
     .addEventListener('change', event => changeActivation(event.target.value), false);
+// this change creates new model
 document.getElementById("selectHiddenLayers")
     .addEventListener('change', event => changeLayers(event.target.value), false);
+// this change creates new model
 document.getElementById("selectNeurons")
     .addEventListener('change', event => changeNeurons(event.target.value), false);
 document.getElementById("selectEpochs")
