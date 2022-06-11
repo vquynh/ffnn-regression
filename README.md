@@ -129,9 +129,13 @@ the model became more accurate.
 Similar to under-fitting, over-fitting can happen for multiple reasons: model is too complex, over training on the same data,
 or too much noise in training data.
 ![Over-fitting](images/over-fitting-3.png)
-In this example, the model is more complex with 10 hidden layers and 256 neurons each, making the model capable capturing more
-nuances in the training data, resulting in a more winding graph. The predicted graph also fit the training data better (low training error)
-than the test data (high test error).
+In this example, the model is more complex with `10 hidden layers` and `256 neurons` each, making the model capable capturing more
+nuances in the training data, resulting in a more winding graph. The predicted graph also fit the training data better (which means training error is low)
+than the test data (which means test error is high).
+
+Especially when the training data contains a lot of noises (`noise variance`=0.01), when tested against a more "accurate" set of data 
+(`testing noise variance` = 0.001), the over-fitting model will perform poorly.
+![Over-fitting-training-data-noise](images/over-fitting-4.png)
 
 ### Tools
 - [Tensorjs](https://www.tensorflow.org/js) for creating, training, saving and loading models
