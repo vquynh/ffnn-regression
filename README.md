@@ -143,6 +143,7 @@ Especially when the training data contains a lot of noise (`noise variance`=0.01
 - [tfs-vis](https://js.tensorflow.org/api_vis/1.5.1/) for visualising model
 - [Bootstrap](https://getbootstrap.com/docs/5.0/getting-started/introduction/) for styling the HTML page
 
+
 ### References
 - [Tutorial: TensorFlow.js — Making Predictions from 2D Data](https://codelabs.developers.google.com/codelabs/tfjs-training-regression/index.html)
 - [Visualisation of function y = (x+0.8)*(x-0.2)*(x-0.3)*(x-0.6)](https://www.desmos.com/calculator)
