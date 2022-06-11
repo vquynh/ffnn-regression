@@ -1,12 +1,12 @@
 # Regression with FFNN
-An interactive visualisation of regression learning with feed-forward neural network (FFNN) model using the [Tensorflow.js](https://www.tensorflow.org/js/) framework
+An interactive visualisation of the regression of function `y(x) = (x+0.8)*(x-0.2)*(x-0.3)*(x-0.6)` in the value range [-1,+1] using feed-forward neural network (FFNN) model
 
 ## How to use
 - Go to [Regression with FFNN](https://vquynh.github.io/ffnn-regression/)
 - **To test or train a pre-trained model further**:
   - Select a model from the model list: "Under Fitting", "Best Fitting", "Over Fitting"
   - Change the training/testing data as desired. Each change will trigger a new training/testing
-    - `Samples`: number of [x,y] value pairs (N)
+    - `Number of samples`: number of [x,y] value pairs (N)
     - `Noise variance`: the amplitude of the noise added to the y value, the higher the value the less uniform the data graph will look compared to the actual graph of the function
   - Change the training setting
     - `Learning rate`: metaphorically represents the speed at which a machine learning model "learns". 
@@ -25,7 +25,7 @@ An interactive visualisation of regression learning with feed-forward neural net
 ## How it is built
 
 ### Generating the training/testing data
-- The data set is created by generating N random [x,y] value pairs in with real x in range [-1,1] and `y = y = (x+0.8)*(x-0.2)*(x-0.3)*(x-0.6) + noise` with `noise` being
+- The data set is created by generating N random [x,y] value pairs in with real x in range [-1,1] and `y = (x+0.8)*(x-0.2)*(x-0.3)*(x-0.6) + noise` with `noise` being
 ```javascript
 function getRandomNoise(variance) {
     let u = 0, v = 0;
