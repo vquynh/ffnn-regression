@@ -2,14 +2,14 @@
  * Get the car data reduced to just the variables we are interested
  * and cleaned of missing data.
  */
-function getData(samples) {
+function getData(samples, variance) {
     const N = samples;
     let data = Array(N);
     for (let i = 0; i < N; i++) {
         let randomSign = Math.random() < 0.5 ? -1 : 1;
         const randomNumber = Math.random();
         const x = randomSign*randomNumber;
-        const noise = getRandomNoise();
+        const noise = getRandomNoise(variance);
         const y = (x+0.8)*(x-0.2)*(x-0.3)*(x-0.6) + noise;
         data[i] = {
             x: x,
@@ -19,7 +19,7 @@ function getData(samples) {
     return data;
 }
 
-function getRandomNoise() {
+function getRandomNoise(variance) {
     let u = 0, v = 0;
     while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
     while(v === 0) v = Math.random();
@@ -30,8 +30,14 @@ function getRandomNoise() {
 function setDefaultParameters(){
     activation = "relu";
     document.getElementById("selectActivation").value = activation;
-    nSamples = 100;
-    document.getElementById("selectSample").value = nSamples;
+    trainingSamples = 100;
+    document.getElementById("selectTrainingSample").value = trainingSamples;
+    trainingVariance = 0.01;
+    document.getElementById("selectTrainingVariance").value = trainingVariance;
+    testingSamples = 100;
+    document.getElementById("selectTestingSample").value = testingSamples;
+    testingVariance = 0.01;
+    document.getElementById("selectTestingVariance").value = testingVariance;
     epochs = 100;
     document.getElementById("selectEpochs").value = epochs;
 }
@@ -43,6 +49,8 @@ function setParametersByModel(name) {
     }else if(name === "Over Fitting"){
         nLayers = 10;
         neurons = 128;
+        trainingSamples = 20;
+        document.getElementById("selectTrainingSample").value = trainingSamples;
     }else{
         nLayers = 5;
         neurons = 32;
@@ -69,9 +77,7 @@ async function createTrainAndTestNewModel(){
     tfvis.show.modelSummary(document.getElementById("summary"), model);
     console.log("Model with layers: ", nLayers);
 
-    await trainModel();
-
-    await testModel();
+    await trainModel().then(testModel);
 }
 
 function createModel() {
@@ -140,7 +146,7 @@ function convertToTensor(data) {
 
 async function trainModel() {
     // Load and plot the original input data that we are going to train on.
-    const trainingData = getData(nSamples);
+    const trainingData = getData(trainingSamples, trainingVariance);
 
     tfvis.render.scatterplot(
         {drawArea: document.getElementById("trainingInput")},
@@ -178,8 +184,8 @@ async function trainModel() {
 }
 
 async function testModel() {
-    const input = getData(nSamples);
-    const tensorData = convertToTensor(input);
+    const testingData = getData(testingSamples, testingVariance);
+    const tensorData = convertToTensor(testingData);
     const {inputMax, inputMin, labelMin, labelMax} = tensorData;
 
     // Generate predictions for a uniform range of numbers between 0 and 1;
@@ -207,7 +213,7 @@ async function testModel() {
         return {x: val, y: preds[i]}
     });
 
-    const originalPoints = input.map(d => ({
+    const originalPoints = testingData.map(d => ({
         x: d.x, y: d.y,
     }));
 
@@ -228,7 +234,7 @@ async function saveModel(){
 }
 function getModelUrl(name){
     if(name === "Under Fitting"){
-        return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/best-fitting.json"
+        return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/under-fitting.json"
     }
     if(name === "Best Fitting"){
         return "https://raw.githubusercontent.com/vquynh/ffnn-regression/main/best-fitting.json"
@@ -250,14 +256,24 @@ async function selectModel(modelName){
     await testModel();
 }
 
-async function changeSample(value) {
-    nSamples = Number(value);
+async function changeTestingSamples(value) {
+    testingSamples = Number(value);
     await testModel();
 }
-async function changeVariance(value) {
-    variance = Number(value);
+async function changeTestingVariance(value) {
+    testingVariance = Number(value);
     await testModel();
 }
+
+async function changeTrainingSamples(value) {
+    trainingSamples = Number(value);
+    await trainModel().then(testModel);
+}
+async function changeTrainingVariance(value) {
+    trainingVariance = Number(value);
+    await trainModel().then(testModel);
+}
+
 async function changeActivation(value) {
     activation = value.toLowerCase();
     await createTrainAndTestNewModel();
@@ -272,25 +288,28 @@ async function changeNeurons(value) {
 }
 async function changeEpochs(value) {
     epochs = Number(value);
-    await trainModel();
-    await testModel();
+    await trainModel().then(testModel);
 }
 async function changeLearningRate(value) {
     learningRate = Number(value);
-    await trainModel();
-    await testModel();
+    await trainModel().then(testModel);
 }
-let variance = 0.01;
-let model, nSamples, activation, nLayers, neurons, epochs, learningRate;
+let model, trainingVariance, trainingSamples, testingVariance, testingSamples, activation, nLayers, neurons, epochs, learningRate;
 document.addEventListener('DOMContentLoaded', run);
 document.getElementById("selectModel")
     .addEventListener('change', event => selectModel(event.target.value), false);
 // this triggers new testing
-document.getElementById("selectSample")
-    .addEventListener('change', event => changeSample(event.target.value), false);
+document.getElementById("selectTestingSample")
+    .addEventListener('change', event => changeTestingSamples(event.target.value), false);
 // this triggers new testing
-document.getElementById("selectVariance")
-    .addEventListener('change', event => changeVariance(event.target.value), false);
+document.getElementById("selectTestingVariance")
+    .addEventListener('change', event => changeTestingVariance(event.target.value), false);
+// this triggers new training and testing
+document.getElementById("selectTrainingSample")
+    .addEventListener('change', event => changeTrainingSamples(event.target.value), false);
+// this triggers new testing
+document.getElementById("selectTrainingVariance")
+    .addEventListener('change', event => changeTrainingVariance(event.target.value), false);
 // this change creates new model
 document.getElementById("selectActivation")
     .addEventListener('change', event => changeActivation(event.target.value), false);

@@ -78,12 +78,12 @@
         </div>
     </div>
     <div class="col-sm-4">
-        <h4>Data setting</h4>
+        <h4>Training data</h4>
         <div class="form-row">
             <div class="col">
                 <div class="form-group">
-                    <label for="selectSample">Number of samples</label>
-                    <select class="form-control" id="selectSample">
+                    <label for="selectTrainingSample">Number of samples</label>
+                    <select class="form-control" id="selectTrainingSample">
                         <option>5</option>
                         <option>10</option>
                         <option>20</option>
@@ -95,8 +95,8 @@
 
             <div class="col">
                 <div class="form-group">
-                    <label for="selectVariance">Noise variance</label>
-                    <select class="form-control" id="selectVariance">
+                    <label for="selectTrainingVariance">Noise variance</label>
+                    <select class="form-control" id="selectTrainingVariance">
                         <option>0.01</option>
                         <option>0.03</option>
                         <option>0.09</option>
@@ -125,7 +125,32 @@
                 </div>
             </div>
         </form>
-        <div class="btn-group btn-group-sm pull-right">
+
+        <h4>Testing data</h4>
+        <div class="form-row">
+            <div class="col">
+                <div class="form-group">
+                    <label for="selectTestingSample">Number of samples</label>
+                    <select class="form-control" id="selectTestingSample">
+                        <option>5</option>
+                        <option>10</option>
+                        <option>20</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="form-group">
+                    <label for="selectTestingVariance">Noise variance</label>
+                    <select class="form-control" id="selectTestingVariance">
+                        <option>0.01</option>
+                        <option>0.03</option>
+                        <option>0.09</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="btn-group btn-group-sm">
             <button class="btn btn-primary" id="train" onclick="trainModel()">Train model</button>
