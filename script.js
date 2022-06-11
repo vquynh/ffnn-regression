@@ -52,11 +52,15 @@ function setParametersByModel(name) {
         nLayers = 10;
         neurons = 256;
         trainingSamples = 50;
-        trainingVariance = 0.001;
+        trainingVariance = 0.01;
         testingSamples = 50;
         testingVariance = 0.001;
         learningRate = 0.003;
         document.getElementById("selectTrainingSample").value = trainingSamples;
+        document.getElementById("selectTrainingVariance").value = trainingVariance;
+        document.getElementById("selectTestingSample").value = testingSamples;
+        document.getElementById("selectTestingVariance").value = testingVariance;
+        document.getElementById("selectLearningRate").value = learningRate;
     }else{
         nLayers = 5;
         neurons = 32;

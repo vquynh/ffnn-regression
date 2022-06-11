@@ -126,10 +126,12 @@ the model became more accurate.
     ![Best-fitting first training](images/best-fitting-2.png)
 
 #### Over-fitting
-Similar to under-fitting, over-fitting can happen for multiple reasons.
-- Over-fitting due to too complex model
-- Over-fitting due to lack of training data
-- Over-fitting due to over training of the same data
+Similar to under-fitting, over-fitting can happen for multiple reasons: model is too complex, over training on the same data,
+or too much noise in training data.
+![Over-fitting](images/over-fitting-3.png)
+In this example, the model is more complex with 10 hidden layers and 256 neurons each, making the model capable capturing more
+nuances in the training data, resulting in a more winding graph. The predicted graph also fit the training data better (low training error)
+than the test data (high test error).
 
 ### Tools
 - [Tensorjs](https://www.tensorflow.org/js) for creating, training, saving and loading models
