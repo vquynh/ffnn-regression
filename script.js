@@ -40,6 +40,8 @@ function setDefaultParameters(){
     document.getElementById("selectTestingVariance").value = testingVariance;
     epochs = 100;
     document.getElementById("selectEpochs").value = epochs;
+    learningRate = 0.001;
+    document.getElementById("selectLearningRate").value = learningRate;
 }
 
 function setParametersByModel(name) {
@@ -48,8 +50,12 @@ function setParametersByModel(name) {
         neurons = 2;
     }else if(name === "Over Fitting"){
         nLayers = 10;
-        neurons = 128;
-        trainingSamples = 20;
+        neurons = 256;
+        trainingSamples = 50;
+        trainingVariance = 0.001;
+        testingSamples = 50;
+        testingVariance = 0.001;
+        learningRate = 0.003;
         document.getElementById("selectTrainingSample").value = trainingSamples;
     }else{
         nLayers = 5;
@@ -175,7 +181,7 @@ async function trainModel() {
     const {inputs, labels} = tensorData;
 
     await model.compile({
-        optimizer: tf.train.adam(),
+        optimizer: tf.train.adam(learningRate),
         loss: tf.losses.meanSquaredError,
         metrics: ['mse','accuracy'],
     });

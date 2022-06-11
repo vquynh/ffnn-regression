@@ -99,13 +99,37 @@ async function saveModel(){
 ### Experiments and interpretation
 #### Under-fitting
 There are multiple examples of under-fitting
-- Under-fitting due to too simple model
-- Under-fitting due to lack of epochs
-- Under-fitting due to high variance in training data
+- **Under-fitting due to unsuitable activation function**
+![Under-fitting due to unsuitable activation function](images/under-fitting-linear.png)
+  The activation function `linear` is not sufficient for the training data.
+
+- **Under-fitting due to too simple model**
+![Under-fitting due to too simple model](images/under-fitting-simple.png)
+The activation function `relu` is better than `linear` but the model with 1 hidden layer and 2 neurons per layer is 
+still not sophisticated enough to predict the data and over-simplifies the trend.
+
+- **Under-fitting due to lack of training**
+  ![Under-fitting due to lack of epochs](images/under-fitting-epochs.png)
+In this example, the model parameters are improved and look promising, but the number of epochs = 5 is too small
+so the model couldn't learn the training data thoroughly and optimise the weights to best fit the data.
 
 #### Best-fitting
-Best-fitting was achieved by the combination of good network design and sufficient training
+Best-fitting was achieved by combining suitable network design with sufficient training
+- Since it is shown about, that the `ReLU` activation function works quite well on the dataset, next step is to find the suitable
+number of hidden layers and neurons per layer. Technically, each layer can have a different setting but for the sake of simplicity
+in the implementation, the same setting is applied on all hidden layers.
+- After trying out a number of combination, *5 hidden layers* with *32 neurons per layer* seems to work the best.
+  - After the first training, the result is not yet optimal
+    ![Best-fitting first training](images/best-fitting-1.png)
+  - However, after 10 trainings, each with a different set of `N = 100 samples of data` and trained at `learning rate = 0.01` for `100 training epochs`,
+the model became more accurate.
+    ![Best-fitting first training](images/best-fitting-2.png)
+
 #### Over-fitting
+Similar to under-fitting, over-fitting can happen for multiple reasons.
+- Over-fitting due to too complex model
+- Over-fitting due to lack of training data
+- Over-fitting due to over training of the same data
 
 ### Tools
 - [Tensorjs](https://www.tensorflow.org/js) for creating, training, saving and loading models
