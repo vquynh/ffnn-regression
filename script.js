@@ -9,7 +9,7 @@ function getData(samples) {
         let randomSign = Math.random() < 0.5 ? -1 : 1;
         const randomNumber = Math.random();
         const x = randomSign*randomNumber;
-        const noise = getRandomNoise(variance);
+        const noise = getRandomNoise();
         const y = (x+0.8)*(x-0.2)*(x-0.3)*(x-0.6) + noise;
         data[i] = {
             x: x,
@@ -19,12 +19,12 @@ function getData(samples) {
     return data;
 }
 
-function getRandomNoise(variance) {
+function getRandomNoise() {
     let u = 0, v = 0;
     while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
     while(v === 0) v = Math.random();
     const number = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
-    return variance*number;
+    return Math.sqrt(variance)*number;
 }
 
 function setDefaultParameters(){
@@ -250,11 +250,13 @@ async function selectModel(modelName){
     await testModel();
 }
 
-function changeSample(value) {
+async function changeSample(value) {
     nSamples = Number(value);
+    await testModel();
 }
-function changeVariance(value) {
+async function changeVariance(value) {
     variance = Number(value);
+    await testModel();
 }
 async function changeActivation(value) {
     activation = value.toLowerCase();
@@ -268,19 +270,25 @@ async function changeNeurons(value) {
     neurons = Number(value);
     await createTrainAndTestNewModel();
 }
-function changeEpochs(value) {
+async function changeEpochs(value) {
     epochs = Number(value);
+    await trainModel();
+    await testModel();
 }
-function changeLearningRate(value) {
+async function changeLearningRate(value) {
     learningRate = Number(value);
+    await trainModel();
+    await testModel();
 }
-
-let model, nSamples, variance, activation, nLayers, neurons, epochs, learningRate;
+let variance = 0.01;
+let model, nSamples, activation, nLayers, neurons, epochs, learningRate;
 document.addEventListener('DOMContentLoaded', run);
 document.getElementById("selectModel")
     .addEventListener('change', event => selectModel(event.target.value), false);
+// this triggers new testing
 document.getElementById("selectSample")
     .addEventListener('change', event => changeSample(event.target.value), false);
+// this triggers new testing
 document.getElementById("selectVariance")
     .addEventListener('change', event => changeVariance(event.target.value), false);
 // this change creates new model
@@ -292,8 +300,10 @@ document.getElementById("selectHiddenLayers")
 // this change creates new model
 document.getElementById("selectNeurons")
     .addEventListener('change', event => changeNeurons(event.target.value), false);
+// this triggers new training and testing
 document.getElementById("selectEpochs")
     .addEventListener('change', event => changeEpochs(event.target.value), false);
+// this triggers new training and testing
 document.getElementById("selectLearningRate")
     .addEventListener('change', event => changeLearningRate(event.target.value), false);
 
