@@ -16,16 +16,17 @@ An interactive visualisation of the regression of function `y(x) = (x+0.8)*(x-0.
     Higher number of epochs means more thoroughly training data is learned which is better when the data is complicated.
   - Click on `Train model`/ `Test model` to train/test model with the current setting.
   - Click on `Save model` to save and download the current model to your computer.
-- **To design a new model**:
+- **To create a new model**:
   - Choose the desired parameters:
     - `Hidden layers`: number of hidden layers in the neural network, more layers means more complex network
     - `Neurons per layer`: number of neurons per hidden layer, the higher the number, the more sensitive the network is to complicated data
     - `Activation function`: the activation function to be used in the hidden layer, which defines the output of a node given the input(s). `relu` function seems to work the best with the given data.
+  - Each change in model parameters will trigger a new model creation, followed by a round of training and testing.
 
-## How it is built
+## How the visualisation is built
 
-### Generating the training/testing data
-- The data set is created by generating N random [x,y] value pairs in with real x in range [-1,1] and `y = (x+0.8)*(x-0.2)*(x-0.3)*(x-0.6) + noise` with `noise` being
+### Generating the training/test data
+- The data set is created by generating N random [x,y] value pairs with real x in range [-1,1] and `y = (x+0.8)*(x-0.2)*(x-0.3)*(x-0.6) + noise` with `noise` being
 ```javascript
 function getRandomNoise(variance) {
     let u = 0, v = 0;
@@ -38,7 +39,7 @@ function getRandomNoise(variance) {
 The implementation is based on [this answer by Maxwell Collard on StackOverflow](https://stackoverflow.com/a/36481059).
 
 ### Create the neural network model
-The [tensorflow.js](https://www.tensorflow.org/js) is used to create a model based on the given setting:
+The [tensorflow.js](https://www.tensorflow.org/js) is used to create a model based on the given model setting:
 ```javascript
 function createModel() {
     // Create a sequential model
@@ -106,19 +107,19 @@ There are multiple examples of under-fitting
 - **Under-fitting due to too simple model**
 ![Under-fitting due to too simple model](images/under-fitting-simple.png)
 The activation function `relu` is better than `linear` but the model with 1 hidden layer and 2 neurons per layer is 
-still not sophisticated enough to predict the data and over-simplifies the trend.
+still not sophisticated enough to predict the data.
 
 - **Under-fitting due to lack of training**
   ![Under-fitting due to lack of epochs](images/under-fitting-epochs.png)
 In this example, the model parameters are improved and look promising, but the number of epochs = 5 is too small
-so the model couldn't learn the training data thoroughly and optimise the weights to best fit the data.
+so the model couldn't learn the training data thoroughly to optimise the weights. Thus, the trend is over-simplified.
 
 #### Best-fitting
 Best-fitting was achieved by combining suitable network design with sufficient training
-- Since it is shown about, that the `ReLU` activation function works quite well on the dataset, next step is to find the suitable
+- Since it is proven that the `ReLU` activation function works well on the given dataset, the next step is to find the suitable
 number of hidden layers and neurons per layer. Technically, each layer can have a different setting but for the sake of simplicity
 in the implementation, the same setting is applied on all hidden layers.
-- After trying out a number of combination, *5 hidden layers* with *32 neurons per layer* seems to work the best.
+- After trying out a number of combination, `5 hidden layers` with `32 neurons per layer` seems to work the best.
   - After the first training, the result is not yet optimal
     ![Best-fitting first training](images/best-fitting-1.png)
   - However, after 10 trainings, each with a different set of `N = 100 samples of data` and trained at `learning rate = 0.01` for `100 training epochs`,
@@ -127,13 +128,13 @@ the model became more accurate.
 
 #### Over-fitting
 Similar to under-fitting, over-fitting can happen for multiple reasons: model is too complex, over training on the same data,
-or too much noise in training data.
+or too much noise in the training data.
 ![Over-fitting](images/over-fitting-3.png)
-In this example, the model is more complex with `10 hidden layers` and `256 neurons` each, making the model capable capturing more
-nuances in the training data, resulting in a more winding graph. The predicted graph also fit the training data better (which means training error is low)
-than the test data (which means test error is high).
+In this example, the model is more complex with `10 hidden layers` and each with `256 neurons`, making the model capable of capturing more
+nuances in the training data, resulting in a more winding graph. The predicted graph also fit the training data better
+than the test data (which means training error is low while test error is high).
 
-Especially when the training data contains a lot of noises (`noise variance`=0.01), when tested against a more "accurate" set of data 
+Especially when the training data contains a lot of noise (`noise variance`=0.01), when tested against a more "accurate" set of data 
 (`testing noise variance` = 0.001), the over-fitting model will perform poorly.
 ![Over-fitting-training-data-noise](images/over-fitting-4.png)
 
