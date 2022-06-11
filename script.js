@@ -32,11 +32,11 @@ function setDefaultParameters(){
     document.getElementById("selectActivation").value = activation;
     trainingSamples = 100;
     document.getElementById("selectTrainingSample").value = trainingSamples;
-    trainingVariance = 0.01;
+    trainingVariance = 0.001;
     document.getElementById("selectTrainingVariance").value = trainingVariance;
     testingSamples = 100;
     document.getElementById("selectTestingSample").value = testingSamples;
-    testingVariance = 0.01;
+    testingVariance = 0.001;
     document.getElementById("selectTestingVariance").value = testingVariance;
     epochs = 100;
     document.getElementById("selectEpochs").value = epochs;
@@ -77,7 +77,7 @@ async function createTrainAndTestNewModel(){
     tfvis.show.modelSummary(document.getElementById("summary"), model);
     console.log("Model with layers: ", nLayers);
 
-    await trainModel().then(testModel);
+    await trainModel();
 }
 
 function createModel() {
@@ -87,6 +87,7 @@ function createModel() {
     // Add a single input layer
     model.add(tf.layers.dense({inputShape: [1], units: 1, useBias: true, name: "input_layer"}));
 
+    // Add n hidden layers with given number of neurons and activation function
     for (let i = 0; i < nLayers; i++) {
         model.add(tf.layers.dense({
             units: neurons,
@@ -144,6 +145,14 @@ function convertToTensor(data) {
     });
 }
 
+function plotLossGraph() {
+    return tfvis.show.fitCallbacks(
+        {drawArea: document.getElementById("trainingPerformance")},
+        ['loss'],
+        {height: 200, callbacks: ['onEpochEnd']}
+    );
+}
+
 async function trainModel() {
     // Load and plot the original input data that we are going to train on.
     const trainingData = getData(trainingSamples, trainingVariance);
@@ -175,12 +184,10 @@ async function trainModel() {
         batchSize,
         epochs,
         shuffle: true,
-        callbacks: tfvis.show.fitCallbacks(
-            { drawArea: document.getElementById("trainingPerformance") },
-            ['loss'],
-            { height: 200, callbacks: ['onEpochEnd'] }
-        )
+        callbacks: plotLossGraph()
     });
+
+    await testModel();
 }
 
 async function testModel() {
@@ -229,8 +236,7 @@ async function testModel() {
 }
 
 async function saveModel(){
-    const result = await model.save('downloads://my-model');;
-    console.log("result: ", result);
+    await model.save('downloads://my-model');
 }
 function getModelUrl(name){
     if(name === "Under Fitting"){
@@ -267,11 +273,11 @@ async function changeTestingVariance(value) {
 
 async function changeTrainingSamples(value) {
     trainingSamples = Number(value);
-    await trainModel().then(testModel);
+    await trainModel();
 }
 async function changeTrainingVariance(value) {
     trainingVariance = Number(value);
-    await trainModel().then(testModel);
+    await trainModel();
 }
 
 async function changeActivation(value) {
@@ -288,11 +294,11 @@ async function changeNeurons(value) {
 }
 async function changeEpochs(value) {
     epochs = Number(value);
-    await trainModel().then(testModel);
+    await trainModel();
 }
 async function changeLearningRate(value) {
     learningRate = Number(value);
-    await trainModel().then(testModel);
+    await trainModel();
 }
 let model, trainingVariance, trainingSamples, testingVariance, testingSamples, activation, nLayers, neurons, epochs, learningRate;
 document.addEventListener('DOMContentLoaded', run);
